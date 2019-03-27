@@ -15,8 +15,6 @@ const port = process.env.PORT || 3000
 
 app.use(express.static(publicDirectorypath))
 
-let count = 0
-
 io.on('connection', (socket) => {
     console.log('New WebSocket connection')
 
