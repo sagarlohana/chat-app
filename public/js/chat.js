@@ -50,12 +50,17 @@ socket.on('message', ({message, username}) => {
     autoscroll()
 })
 
-socket.on('locationMessage', ({message, username}) => {
+socket.on('locationMessage', ({message, username, location}) => {
+    console.log("hello: " + location)
     const html = Mustache.render(locationTemplate, {
         url: message.url,
         createdAt: moment(location.createdAt).format('h:mm a'),
-        username
+        username,
+        location: location
+        
+        //long: socket['currentLocation'].longitude
     })
+    //console.log("Yeet: " + socket['currentLocation'].longitude)
     $messages.insertAdjacentHTML('beforeend', html)
     autoscroll()
 })
@@ -94,6 +99,11 @@ $sendLocationButton.addEventListener('click', (e) => {
 
     navigator.geolocation.getCurrentPosition((position) => {
         console.log(position)
+        coords = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+        }
+        socket.emit('getLocation', coords)
         socket.emit('sendLocation', {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude

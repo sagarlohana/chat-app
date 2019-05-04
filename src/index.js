@@ -5,6 +5,7 @@ const socketio = require('socket.io')
 const Filter = require('bad-words')
 const { generateMessage, generateLocationMessage } = require('./utils/messages')
 const { addUser, getUser, getUsersInRoom, removeUser } = require('./utils/users')
+const geocode = require('./utils/geocode')
 
 const path = require('path')
 const server = http.createServer(app)
@@ -53,8 +54,17 @@ io.on('connection', (socket) => {
     socket.on('sendLocation', (coords, callback) => {
         const user = getUser(socket.id)
         console.log(user.username)
-        io.to(user.room).emit('locationMessage', {message: generateLocationMessage(`https://google.com/maps?q=${coords.latitude},${coords.longitude}`), username: user.username})
-        callback()
+        geocode(coords.latitude, coords.longitude, (res) => {
+            io.to(user.room).emit('locationMessage', {message: generateLocationMessage(`https://google.com/maps?q=${coords.latitude},${coords.longitude}`), username: user.username, location: res.city + ", " + res.province})
+            callback()
+        })
+    })
+
+    socket.on('getLocation', coords => {
+        geocode(coords.latitude, coords.longitude, (res) => {
+            socket.location = res.city + ", " + res.province
+            console.log(socket.location)
+        })
     })
 
     // Disconnection message
